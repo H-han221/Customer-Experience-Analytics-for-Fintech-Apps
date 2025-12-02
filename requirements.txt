@@ -1,0 +1,7 @@
+pandas
+numpy
+beautifulsoup4
+sqlalchemy
+psycopg2
+nltk
+scikit-learn
