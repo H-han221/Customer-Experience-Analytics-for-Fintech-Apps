@@ -81,7 +81,7 @@ X = tfidf.fit_transform(df["clean_text"].fillna(""))
 
 for bank in df["bank"].unique():
     idx = df["bank"] == bank
-    Xb = X[idx]
+    Xb = X[idx.to_numpy()]
     sums = Xb.sum(axis=0)
     scores = [(word, sums[0, i]) for i, word in enumerate(tfidf.get_feature_names_out())]
     top = sorted(scores, key=lambda x: -x[1])[:40]
