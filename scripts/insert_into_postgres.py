@@ -1,28 +1,22 @@
-"""
-insert_into_postgres.py
-- Connects to local/remote PostgreSQL and inserts banks + reviews from processed CSV
-- Uses psycopg2 (recommended)
-"""
-import os
 import pandas as pd
 import psycopg2
 from psycopg2.extras import execute_values
 
-CSV = "data/reviews_processed.csv"
-
+CSV = "scripts/data/reviews_processed.csv"
 DB_CONF = {
     "host": "localhost",
     "port": 5432,
     "dbname": "bank_reviews",
-    "user": "youruser",
-    "password": "yourpassword"
+    "user": "postgres",      # your postgres user
+    "password": "yourpassword"  # your postgres password
 }
 
 df = pd.read_csv(CSV)
+
 conn = psycopg2.connect(**DB_CONF)
 cur = conn.cursor()
 
-# Insert banks and get bank_id mapping
+# insert banks first
 banks = df[["bank", "app_package"]].drop_duplicates().values.tolist()
 for name, pkg in banks:
     cur.execute("""
@@ -53,7 +47,7 @@ for _, r in df.iterrows():
         r.get("source")
     ))
 
-# bulk insert using execute_values
+# bulk insert
 sql = """
 INSERT INTO reviews
   (review_id, bank_id, review_text, rating, review_date, sentiment_label, sentiment_score, source)
@@ -64,4 +58,5 @@ execute_values(cur, sql, records, page_size=500)
 conn.commit()
 cur.close()
 conn.close()
-print("[+] Inserted", len(records), "reviews (ON CONFLICT DO NOTHING)")
+
+print("[+] Inserted", len(records), "reviews successfully")
